@@ -5,7 +5,7 @@ from .crypto import Crypto
 from .structs import Struct
 from . import __name__ as logger_name
 from .network import Connection, Proxies
-from .gadgets import exceptions, methods, thumbnail
+from .gadgets import exceptions, methods
 from .sessions import StringSession, SQLiteSession
 
 
