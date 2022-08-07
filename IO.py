@@ -183,6 +183,8 @@ async def main():
 
 رل میزنه ❤️🗿       
                         """)
+                     except:
+                        pass
                 if event.raw_text.startswith("کی با من رل میزنه") or event.raw_text.startswith("کی با من رل میزنع") and event.type == "Group":
                     try:
                         dialogs = await client(methods.groups.GetGroupAllMembers(group_guid= event.object_guid ,search_text=None, start_id=None))
