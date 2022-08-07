@@ -1,6 +1,5 @@
-import os, requests
+import os
 import logging
-import re
 from .crypto import Crypto
 from .structs import Struct
 from . import __name__ as logger_name
@@ -220,7 +219,7 @@ class Client:
                            message=None,
                            reply_to_message_id: str = None,
                            file_inline=None,
-                           type: str = methods.messages.Image,
+                           type: str = methods.messages.File,
                            thumb: bool = True, *args, **kwargs):
         """_send message_
 
@@ -271,6 +270,10 @@ class Client:
                     elif type in [methods.messages.Gif, methods.messages.Video]:
                         thumb = thumbnail.MakeThumbnail.from_video(file_inline)
 
+                    if thumb.image is None:
+                        type = methods.messages.File
+                        thumb = None
+
                 # the problem will be fixed in the next version #debug
                 # to avoid getting InputError
                 # values are not checked in Rubika (optional)
@@ -285,8 +288,7 @@ class Client:
                     file_inline['time'] = thumb.seconds
                     file_inline['width'] = thumb.width
                     file_inline['height'] = thumb.height
-                    if thumb.image is not None:
-                        file_inline['thumb_inline'] = thumb.to_base64()
+                    file_inline['thumb_inline'] = thumb.to_base64()
 
         return await self(
             methods.messages.SendMessage(
