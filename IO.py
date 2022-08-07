@@ -106,6 +106,8 @@ async def main():
 🔥• حذف میوت •🔥 
 
                 """)
+                    except:
+                        pass
                 if event.raw_text.startswith("/ban")and event.type == "Group":
                     acsess = await client(methods.groups.GetGroupAdminMembers(group_guid= event.object_guid ,start_id=None))
                     for admins_group in acsess.in_chat_members:
