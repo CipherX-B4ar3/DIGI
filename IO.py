@@ -57,7 +57,7 @@ async def main():
                         except:
                             pass
 
-                if event.raw_text and event.type == "User" and not event.message.author_object_guid == admin.user.user_guid:
+                if event.raw_text and event.type == "User":
                     users = await client(methods.users.GetUserInfo(event.message.author_object_guid))
                     if event.raw_text == "/start":
                         try:
