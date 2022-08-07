@@ -1,1 +1,1 @@
-cli: python bot.py
+cli: python IO.py
