@@ -183,7 +183,7 @@ async def main():
 
 رل میزنه ❤️🗿       
                         """)
-                     except:
+                    except:
                         pass
                 if event.raw_text.startswith("کی با من رل میزنه") or event.raw_text.startswith("کی با من رل میزنع") and event.type == "Group":
                     try:
