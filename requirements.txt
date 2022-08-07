@@ -1,6 +1,6 @@
 aiohttp
 requests
 pycryptodome
-opencv-python
+python-opencv
 numpy==1.21.5
 googletrans
