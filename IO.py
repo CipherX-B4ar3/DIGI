@@ -57,11 +57,11 @@ async def main():
                         except:
                             pass
 
-                if event.raw_text and event.type == "User":
+                if event.raw_text and event.type == "User" and not event.message.author_object_guid == admin.user.user_guid:
                     users = await client(methods.users.GetUserInfo(event.message.author_object_guid))
                     if event.raw_text == "/start":
                         try:
-                            await client.send_message(event.object_guid,file_inline="bot.png",message=f"""
+                            await client.sendPhoto(event.object_guid,photo="bot.png",caption=f"""
 ســـلام کاربـــر ( {users.user.first_name} ) گرامـــی👋🏻🌹
 
 بـه ربــات 𝖨𝖮 𝖣𝖨𝖦𝖨 خـوش آمـدید 
@@ -140,7 +140,7 @@ async def main():
                         except:
                             pass
                     else:
-                        await client.send_message(event.object_guid,file_inline="start.jpg",message=f"""
+                        await client.sendPhoto(event.object_guid,photo="start.jpg",caption=f"""
  🔥👻 دوسـت داری گـروهـت یـه ربـات هـوشـمنـد داشـتـه بـاشـه ؟\n\n• اونـم بـه صـورت کامـلا رایـگـان •\nرو پیام زیر کلیک کن\n• /start  \nبـرای هـمـایـت از مـا و دریـافـت وضـعـیـت ربـات
 در کـانـال زیـر جـویـن شـویـد\n\n1 : @{Channel}\n\n🔰 پـشـتـیـبـانـی:\n**RUBIKA** 👇🏻\n@CipherX
                             
