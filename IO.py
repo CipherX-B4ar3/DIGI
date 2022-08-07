@@ -61,7 +61,7 @@ async def main():
                     users = await client(methods.users.GetUserInfo(event.message.author_object_guid))
                     if event.raw_text == "/start":
                         try:
-                            await client.send_message(event.object_guid,file_inlien="bot.png",message=f"""
+                            await client.send_message(event.object_guid,file_inline="bot.png",message=f"""
 ســـلام کاربـــر ( {users.user.first_name} ) گرامـــی👋🏻🌹
 
 بـه ربــات 𝖨𝖮 𝖣𝖨𝖦𝖨 خـوش آمـدید 
