@@ -1,5 +1,6 @@
-import os
+import os, requests
 import logging
+import re
 from .crypto import Crypto
 from .structs import Struct
 from . import __name__ as logger_name
@@ -213,13 +214,115 @@ class Client:
 
     async def upload(self, file, *args, **kwargs):
         return await self._connection.upload_file(file=file, *args, **kwargs)
-    
+
+    async def sendImage(self,
+                           object_guid: str,
+                           caption=None,
+                           reply= None,
+                           image=None,
+                           url= None,
+                           type: str = methods.messages.Image,
+                           thumb: bool = True, *args, **kwargs):
+
+        if object_guid.lower() in ['me', 'self', 'cloud']:
+            object_guid = self._guid
+
+        if url is not None:
+            if not isinstance(url, Struct):
+                if isinstance(url, str):
+                    r = requests.get(url)
+                    name = url.split("/"[-1])
+                    for i in name:
+                        pass
+                    if r.status_code == 200:
+                        with open(i,'wb') as name:
+                            name.write(r.content)
+                        with open(i, 'rb') as file:
+                            kwargs['file_name'] = kwargs.get(
+                                'file_name', os.path.basename(url))
+                            url = file.read()
+
+                if thumb is True:
+                    if type == methods.messages.Image:
+                        thumb = thumbnail.MakeThumbnail(url)
+
+                    elif type in [methods.messages.Gif, methods.messages.Video]:
+                        thumb = thumbnail.MakeThumbnail.from_video(url)
+
+                url = await self.upload(url, *args, **kwargs)
+                url['type'] = type
+                url['time'] = kwargs.get('time', 1)
+                url['width'] = kwargs.get('width', 200)
+                url['height'] = kwargs.get('height', 200)
+                url['music_performer'] = kwargs.get('performer', '')
+
+                if isinstance(thumb, thumbnail.Thumbnail):
+                    url['time'] = thumb.seconds
+                    url['width'] = thumb.width
+                    url['height'] = thumb.height
+                    url['thumb_inline'] = thumb.to_base64() or ''
+
+        return await self(
+            methods.messages.SendMessage(
+                object_guid,
+                message=caption,
+                file_inline=url,
+                reply_to_message_id=reply))
+
+    async def sendPhoto(self,
+                           object_guid: str,
+                           caption=None,
+                           reply: str = None,
+                           photo=None,
+                           type: str = methods.messages.Image,
+                           thumb: bool = True, *args, **kwargs):
+
+        if object_guid.lower() in ['me', 'self', 'cloud']:
+            object_guid = self._guid
+
+        if photo is not None:
+            if not isinstance(photo, Struct):
+                if isinstance(photo, str):
+                    with open(photo, 'rb') as file:
+                        kwargs['file_name'] = kwargs.get(
+                            'file_name', os.path.basename(photo))
+                        photo = file.read()
+
+                if thumb is True:
+                    if type == methods.messages.Image:
+                        thumb = thumbnail.MakeThumbnail(photo)
+
+                    elif type in [methods.messages.Gif, methods.messages.Video]:
+                        thumb = thumbnail.MakeThumbnail.from_video(photo)
+
+                # the problem will be fixed in the next version #debug
+                # to avoid getting InputError
+                # values are not checked in Rubika (optional)
+                photo = await self.upload(photo, *args, **kwargs)
+                photo['type'] = type
+                photo['time'] = kwargs.get('time', 1)
+                photo['width'] = kwargs.get('width', 200)
+                photo['height'] = kwargs.get('height', 200)
+                photo['music_performer'] = kwargs.get('performer', '')
+
+                if isinstance(thumb, thumbnail.Thumbnail):
+                    photo['time'] = thumb.seconds
+                    photo['width'] = thumb.width
+                    photo['height'] = thumb.height
+                    photo['thumb_inline'] = thumb.to_base64() or ''
+
+        return await self(
+            methods.messages.SendMessage(
+                object_guid,
+                message=caption,
+                file_inline=photo,
+                reply_to_message_id=reply))
     async def send_message(self,
                            object_guid: str,
                            message=None,
                            reply_to_message_id: str = None,
                            file_inline=None,
-                           type: str = methods.messages.Image,
+                           type: str = methods.messages.Gif,
                            thumb: bool = True, *args, **kwargs):
         """_send message_
 
@@ -270,10 +373,6 @@ class Client:
                     elif type in [methods.messages.Gif, methods.messages.Video]:
                         thumb = thumbnail.MakeThumbnail.from_video(file_inline)
 
-                    if thumb.image is None:
-                        type = methods.messages.File
-                        thumb = None
-
                 # the problem will be fixed in the next version #debug
                 # to avoid getting InputError
                 # values are not checked in Rubika (optional)
@@ -288,7 +387,7 @@ class Client:
                     file_inline['time'] = thumb.seconds
                     file_inline['width'] = thumb.width
                     file_inline['height'] = thumb.height
-                    file_inline['thumb_inline'] = thumb.to_base64()
+                    file_inline['thumb_inline'] = thumb.to_base64() or ''
 
         return await self(
             methods.messages.SendMessage(
