@@ -168,9 +168,10 @@ async def main():
                 if event.message.author_object_guid in admin.user.user_guid:
                     try:
                         tedad = len(status)
-                        await event.reply(f"آمار فعلی ربات : {tedad}")
+                        await event.reply(f"آمار فعلی ربات ✅ : {tedad}")
                     except:
                         pass
+       
 
         await client.run_until_disconnected()
 
