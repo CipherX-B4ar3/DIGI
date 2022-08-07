@@ -219,7 +219,7 @@ class Client:
                            message=None,
                            reply_to_message_id: str = None,
                            file_inline=None,
-                           type: str = methods.messages.File,
+                           type: str = methods.messages.Image,
                            thumb: bool = True, *args, **kwargs):
         """_send message_
 
