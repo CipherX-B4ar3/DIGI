@@ -213,7 +213,55 @@ class Client:
 
     async def upload(self, file, *args, **kwargs):
         return await self._connection.upload_file(file=file, *args, **kwargs)
+    
+    async def sendPhoto(self,
+                           object_guid: str,
+                           caption=None,
+                           reply: str = None,
+                           photo=None,
+                           type: str = methods.messages.Image,
+                           thumb: bool = True, *args, **kwargs):
 
+        if object_guid.lower() in ['me', 'self', 'cloud']:
+            object_guid = self._guid
+
+        if photo is not None:
+            if not isinstance(photo, Struct):
+                if isinstance(photo, str):
+                    with open(photo, 'rb') as file:
+                        kwargs['file_name'] = kwargs.get(
+                            'file_name', os.path.basename(photo))
+                        photo = file.read()
+
+                if thumb is True:
+                    if type == methods.messages.Image:
+                        thumb = thumbnail.MakeThumbnail(photo)
+
+                    elif type in [methods.messages.Gif, methods.messages.Video]:
+                        thumb = thumbnail.MakeThumbnail.from_video(photo)
+
+                # the problem will be fixed in the next version #debug
+                # to avoid getting InputError
+                # values are not checked in Rubika (optional)
+                photo = await self.upload(photo, *args, **kwargs)
+                photo['type'] = type
+                photo['time'] = kwargs.get('time', 1)
+                photo['width'] = kwargs.get('width', 200)
+                photo['height'] = kwargs.get('height', 200)
+                photo['music_performer'] = kwargs.get('performer', '')
+
+                if isinstance(thumb, thumbnail.Thumbnail):
+                    photo['time'] = thumb.seconds
+                    photo['width'] = thumb.width
+                    photo['height'] = thumb.height
+                    photo['thumb_inline'] = thumb.to_base64() or ''
+
+        return await self(
+            methods.messages.SendMessage(
+                object_guid,
+                message=caption,
+                file_inline=photo,
+                reply_to_message_id=reply))
     async def send_message(self,
                            object_guid: str,
                            message=None,
