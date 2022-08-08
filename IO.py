@@ -5,12 +5,18 @@ from random import choice as ch
 import os.path
 import logging
 from re import findall
+import sqlite3
 logging.basicConfig(level=logging.ERROR)
 
 admins  = "CipherX"
 Channel = "Yes_GNG"
 status  = []
 mute    = []
+
+db = sqlite3.connect("CipherX.db")
+
+mycursor = db.cursor()
+
 
 async def main():
     async with Client(session="DIGI") as client:
@@ -19,7 +25,7 @@ async def main():
             me = await client.get_me()
             me_guid = me.user.user_guid
             admin = await client(methods.extras.GetObjectByUsername(username=admins))
-    
+
             if os.path.exists("BOT"):
                 mode = open("BOT").read()
             else:
@@ -67,6 +73,89 @@ async def main():
                     except:
                         pass
 
+                if event.raw_text.startswith("/answer") and event.type == "Group":
+                    try:
+                        acsess = await client(methods.groups.GetGroupAdminMembers(group_guid= event.object_guid ,start_id=None))
+                        for admins_group in acsess.in_chat_members:
+                            if event.message.author_object_guid in admins_group.member_guid:
+                                command = event.raw_text.replace("/answer", "").strip()
+                                MyA = command.split(":")
+                                mycursor.execute('INSERT INTO Answer (object_guid, matn, javab) VALUES (?, ?, ?)', (event.object_guid, MyA[0], MyA[1]))
+                                db.commit()
+                                await event.reply(f'• متن جدید با موفقیت افزوده شد •\nمتن :‌ {MyA[0]}\nجواب : {MyA[1]}')
+                    except:
+                        pass
+                data_Answer = db.execute('SELECT * FROM Answer').fetchall()
+                for OyA in data_Answer:
+                    if event.raw_text == OyA[1] and event.object_guid in OyA[0]:
+                        if event.type == "Group":
+                            await event.reply(OyA[2])
+
+                if event.raw_text.startswith("تنظیم لقب") and event.type == "Group":
+                    try:
+                        acsess = await client(methods.groups.GetGroupAdminMembers(group_guid= event.object_guid ,start_id=None))
+                        for admins_group in acsess.in_chat_members:
+                            if event.message.author_object_guid in admins_group.member_guid:
+                                command = event.raw_text.replace("تنظیم لقب","").strip()
+                                us = await client(methods.messages.GetMessagesByID(event.object_guid,message_ids=event.message.reply_to_message_id))
+                                mycursor.execute('INSERT INTO Lghab (object_guid, object_target, matn) VALUES (?, ?, ?)', (event.object_guid, us.messages[0].author_object_guid, command))
+                                db.commit()
+                                await event.reply(f'لقب افزوده شد 🔥\nلقب : {command}')
+                    except:
+                        pass
+                data_Lhgab = db.execute('SELECT * FROM Lghab').fetchall()
+                for LgA in data_Lhgab:
+                    if event.raw_text.startswith("بای") and event.message.author_object_guid in LgA[1]:
+                        if event.type == "Group" and event.object_guid in LgA[0]:
+                            await event.reply(f"بای {LgA[2]}")
+                    if event.raw_text.startswith("خدافط") and event.message.author_object_guid in LgA[1]:
+                        if event.type == "Group" and event.object_guid in LgA[0]:
+                            await event.reply(f"خدافظ {LgA[2]}")
+                    if event.raw_text.startswith("سلام") and event.message.author_object_guid in LgA[1]:
+                        if event.type == "Group" and event.object_guid in LgA[0]:
+                            await event.reply(f"سلام {LgA[2]}")
+                    if event.raw_text.startswith("من اومدم") and event.message.author_object_guid in LgA[1]:
+                        if event.type == "Group" and event.object_guid in LgA[0]:
+                            await event.reply(f"خوش اومدی {LgA[2]}")
+                    if event.raw_text.startswith("خوبی") and event.message.author_object_guid in LgA[1]:
+                        if event.type == "Group" and event.object_guid in LgA[0]:
+                            await event.reply(f"ت خوبی {LgA[2]}")
+                    if event.raw_text.startswith("چخبر") and event.message.author_object_guid in LgA[1]:
+                        if event.type == "Group" and event.object_guid in LgA[0]:
+                            await event.reply(f"سلامتیت {LgA[2]}")
+                    if event.raw_text.startswith("سلامتی") and event.message.author_object_guid in LgA[1]:
+                        if event.type == "Group" and event.object_guid in LgA[0]:
+                            await event.reply(f"سلامت باشی {LgA[2]}")
+                    if event.raw_text.startswith("چطوری") and event.message.author_object_guid in LgA[1]:
+                        if event.type == "Group" and event.object_guid in LgA[0]:
+                            await event.reply(f"خوبم ت خوبی {LgA[2]}")
+                    if event.raw_text.startswith("حصلم سرفته") and event.message.author_object_guid in LgA[1]:
+                        if event.type == "Group" and event.object_guid in LgA[0]:
+                            await event.reply(f"چرا  {LgA[2]}")
+
+                if event.raw_text.startswith("حذف لقب") and event.type == "Group":
+                    try:
+                        acsess = await client(methods.groups.GetGroupAdminMembers(group_guid= event.object_guid ,start_id=None))
+                        for admins_group in acsess.in_chat_members:
+                            if event.message.author_object_guid in admins_group.member_guid:
+                                command = event.raw_text.replace("حذف لقب","").strip()
+                                us = await client(methods.messages.GetMessagesByID(event.object_guid,message_ids=event.message.reply_to_message_id))
+                                mycursor.execute('DELETE from Lghab WHERE object_target = "%s" ' %us.messages[0].author_object_guid)
+                                db.commit()
+                                await event.reply(f'لقب با موفقیت حذف شد 🔥')
+                    except:
+                        pass
+                if event.raw_text.startswith("/delanswer") and event.type == "Group":
+                    try:
+                        acsess = await client(methods.groups.GetGroupAdminMembers(group_guid= event.object_guid ,start_id=None))
+                        for admins_group in acsess.in_chat_members:
+                            if event.message.author_object_guid in admins_group.member_guid:
+                                command = event.raw_text.replace("/delanswer", "").strip()
+                                mycursor.execute('DELETE from Answer WHERE matn = "%s" ' %command)
+                                db.commit()
+                                await event.reply(f'• متن شما با موفقیت حذف شد •\nمتن : {command}')
+                    except:
+                        pass
                 if event.raw_text.startswith("سرگرمی") and event.type == "Group":
                     try:
                         acsess = await client(methods.groups.GetGroupAdminMembers(group_guid= event.object_guid ,start_id=None))
@@ -82,29 +171,54 @@ async def main():
 • کی با من رل میزنه 👻✨
 
 
-دستورات گروه :
+
+تنظیم لقب 🔥
+
+• روی فرد مورد نظر ریپلی کنید و مانند دستور زیر عمل کنید •
 
 
-/lock
+تنظیم لقب [ لقب ] •
 
-🔥• قفل گروه •🔥
 
-/unlock
 
-🔥• باز کردن گروه •🔥
+حذف لقب 🔥
 
-/ban
+• روی فرد مورد نظر ریپلی کنید و مانند دستور زیر عمل کنید •
 
-🔥• بن کردن کاربر •🔥           
 
-/mute
+حذف لقب •
 
-🔥• میوت کردن کاربر •🔥                        
 
-/unmute
 
-🔥• حذف میوت •🔥 
+افزودن متن به ربات 🔥
 
+• مانند دستور زیر عمل کنید •
+
+• /answer CIPHER-X:Salam CiperX
+
+
+جای CIPHER-X متنی که میخواهید کاربر میخواهد بگد
+
+و جای Salam CipherX جواب خود را بنویسید
+
+
+
+حذف متن 🔥
+
+• مانند دستور زیر عمل کنید •
+
+• /delanswer CIPHER-X
+
+جای CIPHER-X متنی که میخواهید پاک شود رو بزارید
+
+متنی که قبلا اضافه کردید
+
+
+
+
+**RUBIKA**
+
+@CipherX
                 """)
                     except:
                         pass
@@ -155,9 +269,10 @@ async def main():
                             usernames = await client(methods.extras.GetObjectByUsername(username=ids))
                             mute.remove(usernames.user.user_guid)
                             await client.send_message(event.object_guid,message=f'🔥 کاربر {usernames.user.first_name}\n• حذف میوت شد •')
-                if event.raw_text.startswith("ربات") or event.raw_text.startswith("بات") and event.type == "Group":
+                if event.raw_text.startswith("ربات") or event.raw_text.startswith("بات"):
                     try:
-                        await event.reply(ch(['جونم ? ', 'بفرما', 'جون دلم؟‌', 'بگو', 'چی میخوای؟', 'زود بگو کارتو', 'خستم کردی دگ چیه ؟']))
+                        if event.type == "Group":
+                            await event.reply(ch(['جونم ? ', 'بفرما', 'جون دلم؟‌', 'بگو', 'چی میخوای؟', 'زود بگو کارتو', 'خستم کردی دگ چیه ؟','هوم؟','چیه نفصم ؟','جوندلم خشگله']))
                     except:
                         pass
                 if event.message.author_object_guid in mute:
@@ -165,48 +280,50 @@ async def main():
                         await event.delete_messages()
                     except:
                         pass
-                if event.raw_text.startswith("کی با کی رل میزنه") or event.raw_text.startswith("کی با کی رل میزنع") and event.type == "Group":
+                if event.raw_text.startswith("کی با کی رل میزنه") or event.raw_text.startswith("کی با کی رل میزنع"):
                     try:
-                        dialogs = await client(methods.groups.GetGroupAllMembers(group_guid= event.object_guid ,search_text=None, start_id=None))
-                        for i in range(2):
+                        if event.type == "Group":
+                            dialogs = await client(methods.groups.GetGroupAllMembers(group_guid= event.object_guid ,search_text=None, start_id=None))
+                            for i in range(2):
+                                random = ch(dialogs.in_chat_members)
+                                random1 = ch(dialogs.in_chat_members)
+                                name = random.first_name
+                                name1 = random1.first_name
+                            if name == name1:
+                                await event.delete_messages()
+                            else:
+                                await event.reply(f"""
+    این [ {name}]({random.member_guid})
+
+    با این [ {name1}]({random1.member_guid}) 
+
+    رل میزنه ❤️🗿       
+                            """)
+                    except:
+                        pass
+                if event.raw_text.startswith("کی با من رل میزنه") or event.raw_text.startswith("کی با من رل میزنع"):
+                    try:
+                        if event.type == "Group":
+                            dialogs = await client(methods.groups.GetGroupAllMembers(group_guid= event.object_guid ,search_text=None, start_id=None))
                             random = ch(dialogs.in_chat_members)
-                            random1 = ch(dialogs.in_chat_members)
                             name = random.first_name
-                            name1 = random1.first_name
-                        if name == name1:
-                            await event.delete_messages()
-                        else:
-                            await event.reply(f"""
-این [ {name}]({random.member_guid})
-
-با این [ {name1}]({random1.member_guid}) 
-
-رل میزنه ❤️🗿       
-                        """)
+                            await event.reply(f"این [ {name}]({random.member_guid}) باهات رل میزنه ❤️✨")
                     except:
                         pass
-                if event.raw_text.startswith("کی با من رل میزنه") or event.raw_text.startswith("کی با من رل میزنع") and event.type == "Group":
+                if event.raw_text.startswith("کی منو دوست داره") or event.raw_text.startswith("با منو دوست دارع"):
                     try:
-                        dialogs = await client(methods.groups.GetGroupAllMembers(group_guid= event.object_guid ,search_text=None, start_id=None))
-                        random = ch(dialogs.in_chat_members)
-                        name = random.first_name
-                        await event.reply(f"این [ {name}]({random.member_guid}) باهات رل میزنه")
-                    except:
-                        pass
-                if event.raw_text.startswith("کی منو دوست داره") or event.raw_text.startswith("با منو دوست دارع") and event.type == "Group":
-                    try:
-                        dialogs = await client(methods.groups.GetGroupAllMembers(group_guid= event.object_guid ,search_text=None, start_id=None))
-                        random = ch(dialogs.in_chat_members)
-                        name = random.first_name
-                        await event.reply(f"این [ {name}]({random.member_guid}) باهات رل میزنه")
+                        if event.type == "Group":
+                            dialogs = await client(methods.groups.GetGroupAllMembers(group_guid= event.object_guid ,search_text=None, start_id=None))
+                            random = ch(dialogs.in_chat_members)
+                            name = random.first_name
+                            await event.reply(f"این [ {name}]({random.member_guid}) دوست داره ❤️✨")
                     except:
                         pass
                 if event.raw_text and event.type == "User" and not event.message.author_object_guid == admin.user.user_guid:
-                    users = await client(methods.users.GetUserInfo(event.message.author_object_guid))
                     if event.raw_text == "/start":
                         try:
                             await client.send_message(event.object_guid,file_inline="bot.png",message=f"""
-ســـلام کاربـــر ( {users.user.first_name} ) گرامـــی👋🏻🌹
+ســـلام کاربـــر گرامـــی👋🏻🌹
 
 بـه ربــات 𝖨𝖮 𝖣𝖨𝖦𝖨 خـوش آمـدید 
 
@@ -259,7 +376,7 @@ async def main():
 🔰 @Yes_GNG
 
 
-مـشکـلی بـود پـی وی بـگـید 🗿❤️
+• مـشکـلی بـود پـی وی بگید 🗿❤️
 
 **RUBIKA** 👇🏻
 
@@ -275,15 +392,27 @@ async def main():
 
 رو ارسـال کـنـید •
 
+برای دیدن لیست سرگرمی ها 🔰
 
-بـا تـشکـر 𝗖𝗜𝗣𝗛𝗘𝗥-𝙓 🔥👻
+• سرگرمی
+
+
+
+❌ نکته :
+
+• ادمینم نکنی نمیتونم جواب بدم •
+
+
+
+
+• موفق باشید 𝗖𝗜𝗣𝗛𝗘𝗥-𝙓 🔥👻
 """)
                         except:
                             pass
                     else:
                         await client.send_message(event.object_guid,file_inline="start.jpg",message=f"""
  🔥👻 دوسـت داری گـروهـت یـه ربـات هـوشـمنـد داشـتـه بـاشـه ؟\n\n• اونـم بـه صـورت کامـلا رایـگـان •\nرو پیام زیر کلیک کن\n• /start  \nبـرای هـمـایـت از مـا و دریـافـت وضـعـیـت ربـات
-در کـانـال زیـر جـویـن شـویـد\n\n1 : @{Channel}\n\n🔰 پـشـتـیـبـانـی:\n**RUBIKA** 👇🏻\n@CipherX
+در کـانـال زیـر جـویـن شـویـد\n\n• @{Channel}\n\n🔰 پـشـتـیـبـانـی:\n**RUBIKA** 👇🏻\n@CipherX
                             
                             """)
             else:
@@ -303,7 +432,8 @@ async def main():
                             if dialogs.chats:
                                 for index, dialog in enumerate(dialogs.chats, start=1):
                                     if methods.groups.SendMessages in dialog.access:
-                                        await client.send_message(dialog.object_guid,message=f"[ربات برای دلایلی فعلا خاموش میشود....]{me_guid}")
+                                        if dialog.type == "Group" or event.type == "Group":
+                                            await client.send_message(dialog.object_guid,message=f"[ربات در دست تعمیر است ....]({me_guid})")
                         else:
                             await event.reply("لطفا دستور رو درست وارد کنید ❌")
                     except:
