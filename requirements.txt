@@ -1,6 +1,5 @@
 aiohttp
 requests
-sqlite
 pysqlite3
 pycryptodome
 opencv-python
